@@ -10,6 +10,7 @@ parameters{
 
 model{
     //priors on parameters
+    lambda ~ lognormal(0, 10);
     
     // model of age at death
     age_at_death ~ poisson(lambda);

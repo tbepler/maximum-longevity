@@ -5,7 +5,7 @@ data{
 }
 
 parameters{
-    real<lower=max(age_at_death),upper=1000> max_lifespan;
+    real<lower=max(age_at_death)> max_lifespan;
     real<lower=0> alpha;
     real<lower=0> beta;
 }
@@ -19,8 +19,11 @@ transformed parameters{
 
 model{
     //priors on parameters
+    max_lifespan ~ exponential(1./15.); // give the prior a mean of 15 (125 because relative to 110)
+    alpha ~ lognormal(0, 10);
+    beta ~ lognormal(0, 10);
     
     // model of age at death
     // increment directly to ensure constants are preserved
-    increment_log_prob(beta_lpdf(age_transformed | alpha, beta));
+    age_transformed ~ beta(alpha, beta);
 }
