@@ -13,9 +13,6 @@ parameters{
     
     //poisson dist params
     real<lower=0> lambda;
-    
-    //mixture params
-    real<lower=0,upper=1> mix;
 }
 
 transformed parameters{
@@ -36,19 +33,22 @@ model{
     
     lambda ~ lognormal(0, 10);
     
-    mix ~ beta(1, 1); //use a totally uninformative prior on the mixing parameter
-    
     // model of age at death
-    // increment directly to ensure constants are preserved
     
     // both models should fit the data
     age_transformed ~ beta(alpha, beta);
+    target += -N*log(max_lifespan); // range transform
     age_at_death_int ~ poisson(lambda);
+    
+}
 
-    // infer the mixing parameter for model comparison
-    log_ps[1] = log(mix) + beta_lpdf(age_transformed | alpha, beta);
-    log_ps[2] = log(1-mix) + poisson_lpmf(age_at_death_int | lambda);
+generated quantities{
+    // under a uniform prior, the mixing parameter is given by the log likelihood ratio
+    real lp_beta;
+    real lp_poisson;
+    real mix;
+    lp_beta = beta_lpdf(age_transformed | alpha, beta) - N*log(max_lifespan);
+    lp_poisson = poisson_lpmf(age_at_death_int | lambda);
     
-    increment_log_prob(log_sum_exp(log_ps));
-    
+    mix = lp_beta - lp_poisson;
 }

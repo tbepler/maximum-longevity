@@ -26,4 +26,5 @@ model{
     // model of age at death
     // increment directly to ensure constants are preserved
     age_transformed ~ beta(alpha, beta);
+    target += -N*log(max_lifespan); // need to adjust the lpdf by the range
 }
